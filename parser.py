@@ -1,17 +1,4 @@
-import os
-
-grammar = dict()
-
-with open('grammar.txt', 'r') as f:
-    while line := f.readline():
-        print(line.strip())
-        line = line.split('->')
-        grammar[line[0].strip()] = [prod.strip() if prod.strip() != 'ϵ' else '' for prod in line[1].split('|')]
-
-print(grammar)
-
-with open('built_parser.py', 'w+') as f:
-    print("""words = []
+words = []
 nextchar = ''
 
 with open('words.txt', 'r') as f:
@@ -41,44 +28,38 @@ class Parser:
             raise ParseError(f'Unexpected token: `{self.nextchar}`. Expected `{char}`.')
         
         self.scan()
-    """, file=f)
+    
+    def S(self):
+        self.A()
+        self.B()
 
-    for nonterm, prod in grammar.items():
-        print(f"    def {nonterm}(self):", file=f)
-        if len(prod) == 1:
-            for char in prod[0]:
-                if char.isupper():
-                    print(f'        self.{char}()', file=f)
-                else:
-                    print(f'        self.expect("{char}")', file=f)
-            print(file=f)
+    def A(self):
+        if self.nextchar == "1":
+            self.expect("1")
+            self.C()
+        elif self.nextchar == "-":
+            self.expect("-")
+            self.expect("1")
+            self.C()
         else:
-            has_epsilon = False
-            for i, p in enumerate(prod):
-                if p == '':
-                    has_epsilon = True
-                    continue
-                if i == 0 or (i == 1 and prod[0] == ''):
-                    print(f'        if self.nextchar == "{p[0]}":', file=f)
-                else:
-                    print(f'        elif self.nextchar == "{p[0]}":', file=f)
-                for char in p:
-                    if char.isupper():
-                        print(f'            self.{char}()', file=f)
-                    else:
-                        print(f'            self.expect("{char}")', file=f)
-            if has_epsilon:
-                print('        else:', file=f)
-                print('            return', file=f)
-            else:
-                print('        else:', file=f)
-                print("            raise ParseError(f'Unexpected token: `{self.nextchar}`.')", file=f)
+            raise ParseError(f'Unexpected token: `{self.nextchar}`.')
 
-            print(file=f)
+    def B(self):
+        if self.nextchar == "+":
+            self.expect("+")
+            self.A()
+        else:
+            return
 
-    print('    def parse(self):', file=f)
-    print(f'        self.{list(grammar.keys())[0]}()', file=f)
-    print("""
+    def C(self):
+        if self.nextchar == "i":
+            self.expect("i")
+        else:
+            return
+
+    def parse(self):
+        self.S()
+
         if self.nextchar != '':
             raise ParseError(f'Parser finished before input: `{self.nextchar + self.word}` left.')
 
@@ -90,4 +71,4 @@ for word in words:
     except ParseError as e:
         print(f'{word} | {e}')
     else:
-        print(f'{word} | Accepted')""", file=f)
+        print(f'{word} | Accepted')
