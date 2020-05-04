@@ -1,6 +1,14 @@
 # RecursiveDescent
 There are two important text files: `grammar.txt` and `words.txt`.
 
+### Setup
+```
+$ conda env create -f environment.yml
+$ conda activate tc
+```
+
+### Files
+
 In `grammar.txt` you can specify the grammar, keeping in mind the following rules:
 ```
 Nonterm -> Nonterm Nonterm
@@ -22,5 +30,7 @@ C -> i | ϵ
 ```
 
 In `words.txt` you can specify a list of words, each on a new line, that will be parsed.
+
+### Running
 
 Run (tested in Python 3.8) `build_parser.py`. This will create a file `parser.py` that, when run, will output if the words are accepted or the corresponding error.
